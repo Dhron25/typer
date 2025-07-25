@@ -1,0 +1,27 @@
+/* src/index.css */
+:root {
+  --background-color: #f1f0ea; /* An off-white, paper-like color */
+  --text-color: #333; /* A dark gray for text, not pure black */
+  --font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+  --cursor-color: #333;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
