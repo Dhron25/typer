@@ -2,9 +2,10 @@
 import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import WordDisplay from './components/WordDisplay';
-import { generateWords } from './utils/words'; // Import the function
+import StatsDisplay from './components/StatsDisplay';
+import { generateWords } from './utils/words';
 
-const WORD_COUNT = 40; // The number of words to generate for each test
+const WORD_COUNT = 40;
 
 function App() {
   const [words, setWords] = useState<string[]>([]);
@@ -12,31 +13,70 @@ function App() {
   const [userInput, setUserInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // Generate words when the component first loads
-    setWords(generateWords(WORD_COUNT));
-  }, []);
+  // Stats State
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [correctChars, setCorrectChars] = useState(0);
+  const [totalChars, setTotalChars] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
+    setWords(generateWords(WORD_COUNT));
     inputRef.current?.focus();
   }, []);
 
+  // Timer logic
+  useEffect(() => {
+    let interval: number;
+    if (isTyping) {
+      interval = setInterval(() => {
+        setElapsedTime((prev) => (Date.now() - startTime!) / 1000);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTyping, startTime]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-
-    if (value.endsWith(' ')) {
-      // For now, only allow advancing if the typed word is correct
-      if (value.trim() === words[activeWordIndex]) {
-          setActiveWordIndex((prevIndex) => prevIndex + 1);
-          setUserInput('');
-      }
-    } else {
-      setUserInput(value);
+    
+    if (!isTyping) {
+      setIsTyping(true);
+      setStartTime(Date.now());
     }
+
+    // Handle word completion
+    if (value.endsWith(' ')) {
+      const currentWord = words[activeWordIndex];
+      const typedWord = value.trim();
+
+      setTotalChars(prev => prev + currentWord.length + 1); // +1 for the space
+      for (let i = 0; i < currentWord.length; i++) {
+        if (typedWord[i] === currentWord[i]) {
+          setCorrectChars(prev => prev + 1);
+        }
+      }
+      setCorrectChars(prev => prev + 1); // Count the space as correct
+
+      setActiveWordIndex((prev) => prev + 1);
+      setUserInput('');
+
+      // Stop the test if it's the last word
+      if (activeWordIndex === words.length - 1) {
+        setIsTyping(false);
+      }
+      return;
+    }
+
+    setUserInput(value);
   };
+
+  // Calculate WPM and Accuracy
+  const wpm = elapsedTime > 0 ? (correctChars / 5) / (elapsedTime / 60) : 0;
+  const accuracy = totalChars > 0 ? (correctChars / totalChars) * 100 : 100;
 
   return (
     <div className="app-container" onClick={() => inputRef.current?.focus()}>
+      <StatsDisplay wpm={wpm} accuracy={accuracy} />
       <WordDisplay words={words} activeWordIndex={activeWordIndex} userInput={userInput} />
       <input
         ref={inputRef}
@@ -44,12 +84,8 @@ function App() {
         className="user-input"
         value={userInput}
         onChange={handleInputChange}
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck="false"
-        // Add a check to prevent input if the test is over
-        disabled={activeWordIndex >= words.length}
+        disabled={activeWordIndex >= words.length || !isTyping && elapsedTime > 0}
+        autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
       />
     </div>
   );
@@ -58,3 +94,4 @@ function App() {
 export default App;
 
 
+//
