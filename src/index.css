@@ -25,3 +25,34 @@ body {
   padding: 2rem;
   text-align: center;
 }
+.character {
+  transition: color 0.2s ease;
+}
+
+.character.correct {
+  color: var(--text-color);
+}
+
+.character.incorrect {
+  color: #d9a0a0; /* A soft, E-ink friendly 'error' color */
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+.word.active .character.untyped {
+   color: #a0a0a0;
+}
+
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  background-color: var(--cursor-color);
+  animation: blink 1s infinite;
+  margin-left: -1px; /* Adjust position */
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
