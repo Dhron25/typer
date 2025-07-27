@@ -20,4 +20,3 @@ const Character: React.FC<CharacterProps> = ({ char, status }) => {
 
 export default Character;
 
-

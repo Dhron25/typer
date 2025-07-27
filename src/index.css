@@ -118,15 +118,15 @@ body {
   opacity: 0;
 }
 
-/* Cursive Mode Style */
+
 .cursive-mode .word-display {
     font-family: var(--font-family-cursive);
-    font-weight: 400; /* Cursive fonts are often lighter */
-    font-size: 2.5rem; /* Increase size for readability */
+    font-weight: 400; 
+    font-size: 2.5rem; 
     line-height: 3.5rem;
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
   #root {
     padding: 1rem;
@@ -179,4 +179,27 @@ body {
   width: 80px;
   height: 80px;
 }
+.results-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
 
+.results-stats {
+  display: flex;
+  gap: 4rem;
+}
+.results-stats .stat .value {
+  font-size: 3rem;
+}
+
+.results-stats .stat .label {
+  font-size: 1rem;
+}
+
+.results-details {
+  font-size: 1.2rem;
+  color: var(--inactive-color);
+}
