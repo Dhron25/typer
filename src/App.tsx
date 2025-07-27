@@ -3,8 +3,8 @@ import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import WordDisplay from './components/WordDisplay';
 import { generateWords } from './utils/words';
-import Header from './components/Header'; // Import Header
-import TerminalIcon from './components/TerminalIcon'; // Import Icon
+import Header from './components/Header'; 
+import TerminalIcon from './components/TerminalIcon';
 
 const WORD_COUNT = 40;
 
@@ -14,8 +14,7 @@ function App() {
   const [userInput, setUserInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // We are keeping the logic simple for this rebranding phase.
-  // We'll re-add stats and more complex logic in the next phases.
+
   
   useEffect(() => {
     resetTest();
@@ -43,7 +42,7 @@ function App() {
     setUserInput(value);
   };
   
-  // A simple keyboard shortcut to reset
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {

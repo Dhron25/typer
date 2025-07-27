@@ -1,9 +1,9 @@
 /* src/index.css */
 :root {
   --background-color: #000000;
-  --text-color: #9dff00; /* Vibrant lime green */
-  --inactive-color: #444; /* Dim color for inactive text */
-  --error-color: #ff5555; /* A contrasting red for errors */
+  --text-color: #9dff00; 
+  --inactive-color: #444; 
+  --error-color: #ff5555; 
   --font-family-sans: 'Courier Prime', 'Courier New', Courier, monospace;
   --font-family-cursive: 'Ballet', cursive;
 }
@@ -81,7 +81,7 @@ body {
   50% { opacity: 0; }
 }
 
-/* Stats, Input, and Button Styles */
+
 .stats-display {
   display: flex;
   gap: 3rem;
@@ -153,7 +153,7 @@ body {
 .app-header .logo {
   font-family: var(--font-family-cursive);
   font-size: 6rem;
-  font-weight: 400; /* Ballet font is not bold */
+  font-weight: 400; 
   margin: 0;
   color: var(--text-color);
 }
@@ -161,11 +161,10 @@ body {
 .app-header .slogan {
   font-family: var(--font-family-cursive);
   font-size: 1.5rem;
-  margin-top: -1rem; /* Adjust spacing */
+  margin-top: -1rem; 
   color: var(--text-color);
 }
 
-/* Smaller logo on mobile */
 @media (max-width: 768px) {
   .app-header .logo {
     font-size: 4rem;
