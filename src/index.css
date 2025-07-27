@@ -1,9 +1,11 @@
 /* src/index.css */
 :root {
-  --background-color: #f1f0ea; /* An off-white, paper-like color */
-  --text-color: #333; /* A dark gray for text, not pure black */
-  --font-family: 'Courier Prime', 'Courier New', Courier, monospace;
-  --cursor-color: #333;
+  --background-color: #000000;
+  --text-color: #9dff00; /* Vibrant lime green */
+  --inactive-color: #444; /* Dim color for inactive text */
+  --error-color: #ff5555; /* A contrasting red for errors */
+  --font-family-sans: 'Courier Prime', 'Courier New', Courier, monospace;
+  --font-family-cursive: 'Ballet', cursive;
 }
 
 body {
@@ -14,7 +16,7 @@ body {
   min-height: 100vh;
   background-color: var(--background-color);
   color: var(--text-color);
-  font-family: var(--font-family);
+  font-family: var(--font-family-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -24,46 +26,30 @@ body {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
 }
 
+/* Word Display Styles */
 .word-display {
-  font-size: 1.8rem;
-  line-height: 2.5rem;
-  max-width: 70ch; /* Limit width for readability */
+  font-size: 2rem;
+  line-height: 2.8rem;
+  max-width: 65ch;
   text-align: left;
-  margin-bottom: 2rem;
 }
 
 .word {
-  color: #a0a0a0; /* Dim color for upcoming words */
+  color: var(--inactive-color);
   transition: color 0.2s ease;
 }
 
 .word.active {
-  color: var(--text-color); /* Active word is full color */
-  font-weight: bold;
+  color: var(--text-color);
 }
 
-.app-container {
-  position: relative;
-  width: 100%;
-}
-
-.user-input {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0; /* Make the actual input invisible */
-  z-index: 2; /* Ensure it's on top */
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: var(--font-family); /* Ensure font matches for cursor placement */
-  font-size: 1.8rem;
-}
-
+/* Character & Cursor Styles */
 .character {
   transition: color 0.2s ease;
 }
@@ -73,22 +59,21 @@ body {
 }
 
 .character.incorrect {
-  color: #d9a0a0; /* A soft, E-ink friendly 'error' color */
+  color: var(--error-color);
   text-decoration: underline;
   text-decoration-thickness: 2px;
 }
 
 .word.active .character.untyped {
-   color: #a0a0a0;
+   color: var(--inactive-color);
 }
 
-/* Custom Blinking Cursor */
 .cursor {
   display: inline-block;
   width: 2px;
-  background-color: var(--cursor-color);
+  background-color: var(--text-color);
   animation: blink 1s infinite;
-  margin-left: -1px; /* Adjust position */
+  margin-left: -1px;
 }
 
 @keyframes blink {
@@ -96,59 +81,97 @@ body {
   50% { opacity: 0; }
 }
 
+/* Stats, Input, and Button Styles */
 .stats-display {
   display: flex;
   gap: 3rem;
-  margin-bottom: 2rem;
   font-size: 1.5rem;
-  user-select: none; /* Prevent text selection */
+  user-select: none;
 }
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .stat .label {
   font-size: 1rem;
-  color: #a0a0a0;
+  color: var(--inactive-color);
 }
-
 .stat .value {
+  color: var(--text-color);
   font-weight: bold;
 }
 
 .reset-button {
-  margin-top: 2rem;
   background: transparent;
   border: 2px solid var(--text-color);
   color: var(--text-color);
   padding: 0.5rem 1rem;
-  font-family: var(--font-family);
+  font-family: var(--font-family-sans);
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
-
 .reset-button:hover {
   background-color: var(--text-color);
   color: var(--background-color);
 }
 
-/* --- Responsive Design --- */
+/* Hidden real input */
+.user-input {
+  position: absolute;
+  opacity: 0;
+}
+
+/* Cursive Mode Style */
+.cursive-mode .word-display {
+    font-family: var(--font-family-cursive);
+    font-weight: 400; /* Cursive fonts are often lighter */
+    font-size: 2.5rem; /* Increase size for readability */
+    line-height: 3.5rem;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   #root {
     padding: 1rem;
-  }
-
-  .stats-display {
-    font-size: 1.2rem;
     gap: 1.5rem;
   }
-
+  .stats-display {
+    font-size: 1.2rem;
+  }
   .word-display {
     font-size: 1.5rem;
     line-height: 2.2rem;
+  }
+  .cursive-mode .word-display {
+    font-size: 2rem;
+    line-height: 2.8rem;
+  }
+}
+
+.app-header {
+  text-align: center;
+  user-select: none;
+}
+
+.app-header .logo {
+  font-family: var(--font-family-cursive);
+  font-size: 6rem;
+  font-weight: 400; /* Ballet font is not bold */
+  margin: 0;
+  color: var(--text-color);
+}
+
+.app-header .slogan {
+  font-family: var(--font-family-cursive);
+  font-size: 1.5rem;
+  margin-top: -1rem; /* Adjust spacing */
+  color: var(--text-color);
+}
+
+/* Smaller logo on mobile */
+@media (max-width: 768px) {
+  .app-header .logo {
+    font-size: 4rem;
+  }
+  .app-header .slogan {
+    font-size: 1.2rem;
+    margin-top: -0.5rem;
   }
 }
