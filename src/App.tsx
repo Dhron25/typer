@@ -13,29 +13,21 @@ type TestDuration = 15 | 30 | 60;
 type WordCount = 10 | 25 | 50 | 100;
 
 function App() {
-  // Core State
   const [words, setWords] = useState<string[]>([]);
   const [userInput, setUserInput] = useState('');
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [testStatus, setTestStatus] = useState<'waiting' | 'typing' | 'finished'>('waiting');
-
-  // Settings State
   const [isCursiveMode, setIsCursiveMode] = useState(false);
   const [isPunctuationMode, setIsPunctuationMode] = useState(false);
   const [testMode, setTestMode] = useState<TestMode>('words');
   const [testDuration, setTestDuration] = useState<TestDuration>(30);
   const [wordCount, setWordCount] = useState<WordCount>(25);
-  // No more cursorStyle state
-
-  // Stats & Keyboard State
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [correctChars, setCorrectChars] = useState(0);
   const [incorrectChars, setIncorrectChars] = useState(0);
   const [wpmHistory, setWpmHistory] = useState<number[]>([]);
   const [activeKey, setActiveKey] = useState('');
-
-  // Refs
   const inputRef = useRef<HTMLInputElement>(null);
   const prevUserInput = useRef('');
 
@@ -47,7 +39,8 @@ function App() {
     let interval: number | undefined;
     if (testStatus === 'typing') {
       interval = setInterval(() => {
-        setElapsedTime(prev => {
+        // Renamed 'prev' to '_' to fix the unused variable warning
+        setElapsedTime(_ => {
           const newElapsedTime = (Date.now() - startTime!) / 1000;
           const currentWpm = newElapsedTime > 0 ? (correctChars / 5) / (newElapsedTime / 60) : 0;
           setWpmHistory(prevHistory => [...prevHistory, currentWpm]);
@@ -137,7 +130,7 @@ function App() {
     setUserInput(value);
   };
 
-  const appClasses = `${isCursiveMode ? 'cursive-mode' : ''} cursor-block`; // Hardcoded cursor-block
+  const appClasses = `${isCursiveMode ? 'cursive-mode' : ''} cursor-block`;
 
   return (
     <div className={appClasses}>
