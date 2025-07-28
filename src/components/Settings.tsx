@@ -3,6 +3,8 @@ import React from 'react';
 
 type TestMode = 'words' | 'time';
 type TestDuration = 15 | 30 | 60;
+type CursorStyle = 'line' | 'block' | 'underline';
+type WordCount = 10 | 25 | 50 | 100;
 
 interface SettingsProps {
   isCursiveMode: boolean;
@@ -13,6 +15,10 @@ interface SettingsProps {
   onTestModeChange: (mode: TestMode) => void;
   testDuration: TestDuration;
   onTestDurationChange: (duration: TestDuration) => void;
+  wordCount: WordCount;
+  onWordCountChange: (count: WordCount) => void;
+  cursorStyle: CursorStyle;
+  onCursorStyleChange: (style: CursorStyle) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ 
@@ -20,12 +26,14 @@ const Settings: React.FC<SettingsProps> = ({
   isPunctuationMode, onPunctuationToggle,
   testMode, onTestModeChange,
   testDuration, onTestDurationChange,
+  wordCount, onWordCountChange,
+  cursorStyle, onCursorStyleChange,
 }) => {
   return (
     <div className="settings">
       <div className="settings-group">
         <button onClick={onCursiveToggle} className={isCursiveMode ? 'active' : ''}>
-          Cursive
+          Challenge
         </button>
         <button onClick={onPunctuationToggle} className={isPunctuationMode ? 'active' : ''}>
           Punctuation
@@ -39,6 +47,16 @@ const Settings: React.FC<SettingsProps> = ({
           Time
         </button>
       </div>
+
+      {testMode === 'words' && (
+        <div className="settings-group">
+          <button onClick={() => onWordCountChange(10)} className={wordCount === 10 ? 'active' : ''}>10</button>
+          <button onClick={() => onWordCountChange(25)} className={wordCount === 25 ? 'active' : ''}>25</button>
+          <button onClick={() => onWordCountChange(50)} className={wordCount === 50 ? 'active' : ''}>50</button>
+          <button onClick={() => onWordCountChange(100)} className={wordCount === 100 ? 'active' : ''}>100</button>
+        </div>
+      )}
+
       {testMode === 'time' && (
         <div className="settings-group">
           <button onClick={() => onTestDurationChange(15)} className={testDuration === 15 ? 'active' : ''}>15s</button>
@@ -46,6 +64,12 @@ const Settings: React.FC<SettingsProps> = ({
           <button onClick={() => onTestDurationChange(60)} className={testDuration === 60 ? 'active' : ''}>60s</button>
         </div>
       )}
+
+      <div className="settings-group">
+        <button onClick={() => onCursorStyleChange('line')} className={cursorStyle === 'line' ? 'active' : ''}>Line</button>
+        <button onClick={() => onCursorStyleChange('block')} className={cursorStyle === 'block' ? 'active' : ''}>Block</button>
+        <button onClick={() => onCursorStyleChange('underline')} className={cursorStyle === 'underline' ? 'active' : ''}>Underline</button>
+      </div>
     </div>
   );
 };
