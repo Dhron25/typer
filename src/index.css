@@ -20,7 +20,7 @@ body {
   font-family: var(--font-family-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden; /* Prevent body scrollbars */
+  overflow: hidden;
 }
 
 #root {
@@ -45,7 +45,6 @@ body {
     gap: 1.5rem;
 }
 
-/* Header, Settings, and other components */
 .app-header {
   width: 100%;
   text-align: left;
@@ -98,23 +97,20 @@ body {
   color: var(--background-color);
 }
 
-/* --- SMOOTH SCROLLING TEXT CONTAINER --- */
 .word-display-container {
   font-size: 2rem;
   line-height: 3rem;
   width: 100%;
   max-width: 70ch;
-  overflow: hidden; /* This is crucial */
+  overflow: hidden;
   user-select: none;
   position: relative;
 }
 
 .words-wrapper {
-  white-space: nowrap; /* This is crucial */
+  white-space: nowrap;
   color: var(--inactive-color);
 }
-/* --- END OF SMOOTH SCROLLING --- */
-
 
 .word.active {
   color: var(--text-color);
@@ -129,26 +125,15 @@ body {
   color: var(--inactive-color);
 }
 
+/* --- Simplified Cursor Styles --- */
 .cursor {
   display: inline-block;
   animation: blink 1s infinite;
   background-color: var(--active-color);
   color: var(--background-color);
-}
-.cursor-block .cursor {
   width: 1ch;
   margin-left: 0;
   border-radius: 2px;
-}
-.cursor-line .cursor {
-  width: 2px;
-  margin-left: -1px;
-}
-.cursor-underline .cursor {
-  width: 1ch;
-  height: 3px;
-  margin-left: -1ch;
-  align-self: flex-end;
 }
 
 @keyframes blink {
@@ -179,22 +164,19 @@ body {
   border-radius: 6px;
   font-size: 1.1rem;
   text-transform: uppercase;
-  border-bottom: 4px solid #1e1e1e; /* Deeper shadow for 3D effect */
-  transition: all 0.05s ease-out; /* Faster, snappier transition */
+  border-bottom: 4px solid #1e1e1e;
+  transition: all 0.05s ease-out;
 }
 .key.key-space {
   width: 400px;
 }
 .key.active {
-  background-color: #222; /* Darken the key itself slightly */
+  background-color: #222;
   color: var(--active-color);
-  transform: translateY(2px); /* Push the key down */
-  border-bottom-width: 2px; /* Reduce the border to simulate depth */
+  transform: translateY(2px);
+  border-bottom-width: 2px;
 }
-/* --- END OF PHYSICAL KEYBOARD --- */
 
-
-/* Results Screen & Other Styles */
 .results-screen {
   display: flex;
   flex-direction: column;
@@ -283,7 +265,6 @@ body {
   line-height: 3.5rem;
 }
 
-/* Responsive Design for Mobile */
 @media (max-width: 768px) {
   #root {
     padding: 1rem;

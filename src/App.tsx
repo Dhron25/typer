@@ -10,7 +10,6 @@ import { generateWords } from './utils/words';
 
 type TestMode = 'words' | 'time';
 type TestDuration = 15 | 30 | 60;
-type CursorStyle = 'line' | 'block' | 'underline';
 type WordCount = 10 | 25 | 50 | 100;
 
 function App() {
@@ -26,7 +25,7 @@ function App() {
   const [testMode, setTestMode] = useState<TestMode>('words');
   const [testDuration, setTestDuration] = useState<TestDuration>(30);
   const [wordCount, setWordCount] = useState<WordCount>(25);
-  const [cursorStyle, setCursorStyle] = useState<CursorStyle>('block');
+  // No more cursorStyle state
 
   // Stats & Keyboard State
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -40,12 +39,10 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const prevUserInput = useRef('');
 
-  // Effect to reset the test when major settings change
   useEffect(() => {
     resetTest();
   }, [isPunctuationMode, testMode, testDuration, wordCount]);
 
-  // Timer and WPM history effect
   useEffect(() => {
     let interval: number | undefined;
     if (testStatus === 'typing') {
@@ -66,7 +63,6 @@ function App() {
     return () => clearInterval(interval);
   }, [testStatus, startTime, correctChars, testMode, testDuration]);
 
-  // Keyboard highlighting effect
   useEffect(() => {
     if (testStatus === 'typing' || testStatus === 'waiting') {
       const char = userInput.length > prevUserInput.current.length ? userInput[userInput.length - 1] : 'Backspace';
@@ -77,11 +73,10 @@ function App() {
     }
   }, [userInput, testStatus]);
   
-  // --- NEW: Instant Reset Hotkey Effect ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
-        e.preventDefault(); // Prevent default tab behavior (changing focus)
+        e.preventDefault();
         resetTest();
       }
     };
@@ -89,8 +84,7 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []); // Empty dependency array means this effect runs only once
-
+  }, []);
 
   const resetTest = () => {
     const count = testMode === 'words' ? wordCount : 200;
@@ -108,22 +102,18 @@ function App() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-
     if (testStatus === 'finished') return;
     if (testStatus === 'waiting' && value.length > 0) {
       setTestStatus('typing');
       setStartTime(Date.now());
     }
-
     if (value.endsWith(' ')) {
       if (value.trim() === '') {
         setUserInput('');
         return;
       }
-        
       const currentWord = words[activeWordIndex];
       const typedWord = value.trim();
-
       setIncorrectChars(prev => prev + Math.abs(currentWord.length - typedWord.length));
       for (let i = 0; i < Math.min(currentWord.length, typedWord.length); i++) {
         if (typedWord[i] === currentWord[i]) {
@@ -133,7 +123,6 @@ function App() {
         }
       }
       setCorrectChars(prev => prev + 1);
-
       if (testMode === 'words' && activeWordIndex === wordCount - 1) {
         setTestStatus('finished');
       } else {
@@ -145,16 +134,14 @@ function App() {
       }
       return;
     }
-
     setUserInput(value);
   };
 
-  const appClasses = `${isCursiveMode ? 'cursive-mode' : ''} cursor-${cursorStyle}`;
+  const appClasses = `${isCursiveMode ? 'cursive-mode' : ''} cursor-block`; // Hardcoded cursor-block
 
   return (
     <div className={appClasses}>
       {testStatus === 'waiting' && <Header />}
-
       <div className="main-content">
         {testStatus === 'waiting' && (
           <Settings 
@@ -163,16 +150,11 @@ function App() {
             testMode={testMode} onTestModeChange={setTestMode}
             testDuration={testDuration} onTestDurationChange={setTestDuration}
             wordCount={wordCount} onWordCountChange={setWordCount}
-            cursorStyle={cursorStyle} onCursorStyleChange={setCursorStyle}
           />
         )}
-        
         {testStatus !== 'finished' && (
-          <WordDisplay 
-            words={words} activeWordIndex={activeWordIndex} userInput={userInput} 
-          />
+          <WordDisplay words={words} activeWordIndex={activeWordIndex} userInput={userInput} />
         )}
-        
         {testStatus === 'finished' && (
           <Results 
             correctChars={correctChars} incorrectChars={incorrectChars}
@@ -180,10 +162,8 @@ function App() {
             wpmHistory={wpmHistory} onReset={resetTest}
           />
         )}
-        
         {testStatus !== 'finished' && <Keyboard activeKey={activeKey} />}
       </div>
-      
       <input
         ref={inputRef} type="text" className="user-input"
         value={userInput} onChange={handleInputChange} disabled={testStatus === 'finished'}
