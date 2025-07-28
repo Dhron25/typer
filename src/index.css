@@ -203,3 +203,39 @@ body {
   font-size: 1.2rem;
   color: var(--inactive-color);
 }
+.settings {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.settings-group {
+  display: flex;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.settings button {
+  background: transparent;
+  border: none;
+  color: var(--inactive-color);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-family-sans);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.settings button:hover {
+  color: #fff;
+}
+
+.settings button.active {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}

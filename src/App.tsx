@@ -1,11 +1,13 @@
-// src/App.tsx
 import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import WordDisplay from './components/WordDisplay';
 import Header from './components/Header';
-import TerminalIcon from './components/TerminalIcon';
-import Results from './components/Results'; 
+import Results from './components/Results';
+import Settings from './components/Settings';
 import { generateWords } from './utils/words';
+
+type TestMode = 'words' | 'time';
+type TestDuration = 15 | 30 | 60;
 
 const WORD_COUNT = 40;
 
@@ -13,77 +15,96 @@ function App() {
   const [words, setWords] = useState<string[]>([]);
   const [userInput, setUserInput] = useState('');
   const [activeWordIndex, setActiveWordIndex] = useState(0);
-  
-  // 'typing' | 'finished'
-  const [testStatus, setTestStatus] = useState<'typing' | 'finished'>('typing');
+  const [testStatus, setTestStatus] = useState<'waiting' | 'typing' | 'finished'>('waiting');
+
+  // Settings State
+  const [isCursiveMode, setIsCursiveMode] = useState(false);
+  const [isPunctuationMode, setIsPunctuationMode] = useState(false);
+  const [testMode, setTestMode] = useState<TestMode>('words');
+  const [testDuration, setTestDuration] = useState<TestDuration>(30);
 
   // Stats State
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const [correctChars, setCorrectChars] = useState(0);
   const [incorrectChars, setIncorrectChars] = useState(0);
-  
+  const [wpmHistory, setWpmHistory] = useState<number[]>([]);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     resetTest();
-  }, []);
-  
+  }, [isPunctuationMode, testMode, testDuration]);
+
+  // Timer for time-based mode and WPM history tracking
+  useEffect(() => {
+    let interval: number | undefined;
+    if (testStatus === 'typing' && startTime) {
+      interval = setInterval(() => {
+        const newElapsedTime = (Date.now() - startTime) / 1000;
+        setElapsedTime(newElapsedTime);
+
+        // WPM calculation for history
+        const currentWpm = newElapsedTime > 0 ? (correctChars / 5) / (newElapsedTime / 60) : 0;
+        setWpmHistory(prevHistory => [...prevHistory, currentWpm]);
+        
+        // Handle end of test for time mode
+        if (testMode === 'time' && newElapsedTime >= testDuration) {
+          setTestStatus('finished');
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [testStatus, startTime, correctChars, testMode, testDuration]);
+
   const resetTest = () => {
-    setWords(generateWords(WORD_COUNT));
-    setTestStatus('typing');
+    setWords(generateWords(WORD_COUNT, isPunctuationMode));
+    setTestStatus('waiting');
     setActiveWordIndex(0);
     setUserInput('');
     setStartTime(null);
+    setElapsedTime(0);
     setCorrectChars(0);
     setIncorrectChars(0);
+    setWpmHistory([]);
     inputRef.current?.focus();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    if (testStatus !== 'typing') return;
-
-    // Start timer on first keypress
-    if (!startTime) {
+    if (testStatus === 'finished') return;
+    if (testStatus === 'waiting') {
+      setTestStatus('typing');
       setStartTime(Date.now());
     }
 
-    // Handle word completion with spacebar
     if (value.endsWith(' ')) {
-      // Don't advance if the input is empty
       if (value.trim() === '') {
-          setUserInput('');
-          return;
+        setUserInput('');
+        return;
       }
         
       const currentWord = words[activeWordIndex];
       const typedWord = value.trim();
 
-      // Update stats based on the completed word
-      // A more accurate way is to check the already typed part of the word
-      // This logic is simplified for now but can be improved
-      for (let i = 0; i < currentWord.length; i++) {
+      setIncorrectChars(prev => prev + Math.abs(currentWord.length - typedWord.length));
+      for (let i = 0; i < Math.min(currentWord.length, typedWord.length); i++) {
         if (typedWord[i] === currentWord[i]) {
           setCorrectChars(prev => prev + 1);
         } else {
           setIncorrectChars(prev => prev + 1);
         }
       }
-      // Add a correct char for the space only if word was fully typed
-      if (typedWord.length >= currentWord.length) {
-        setCorrectChars(prev => prev + 1);
-      } else {
-        // If word was not fully typed, the space is an error
-        setIncorrectChars(prev => prev + 1);
-      }
+      setCorrectChars(prev => prev + 1); // For the space
 
-
-      // Check if it's the last word
-      if (activeWordIndex === words.length - 1) {
+      if (testMode === 'words' && activeWordIndex === words.length - 1) {
         setTestStatus('finished');
-        setUserInput(''); // Clear input on finish
       } else {
+        if (testMode === 'time' && activeWordIndex === words.length - 1) {
+            setWords(prev => [...prev, ...generateWords(WORD_COUNT, isPunctuationMode)]);
+        }
         setActiveWordIndex(prev => prev + 1);
         setUserInput('');
       }
@@ -93,26 +114,39 @@ function App() {
     setUserInput(value);
   };
 
+  const appClasses = isCursiveMode ? 'cursive-mode' : '';
+
   return (
-    <>
+    <div className={appClasses}>
       <Header />
-      {testStatus === 'typing' && (
-        <>
-            <TerminalIcon />
-            <WordDisplay 
-                words={words} 
-                activeWordIndex={activeWordIndex} 
-                userInput={userInput} 
-            />
-        </>
+      {testStatus !== 'finished' && (
+        <Settings 
+          isCursiveMode={isCursiveMode}
+          onCursiveToggle={() => setIsCursiveMode(!isCursiveMode)}
+          isPunctuationMode={isPunctuationMode}
+          onPunctuationToggle={() => setIsPunctuationMode(!isPunctuationMode)}
+          testMode={testMode}
+          onTestModeChange={setTestMode}
+          testDuration={testDuration}
+          onTestDurationChange={setTestDuration}
+        />
+      )}
+      
+      {testStatus !== 'finished' && (
+        <WordDisplay 
+          words={words} 
+          activeWordIndex={activeWordIndex} 
+          userInput={userInput} 
+        />
       )}
       
       {testStatus === 'finished' && (
         <Results 
-            correctChars={correctChars}
-            incorrectChars={incorrectChars}
-            startTime={startTime}
-            onReset={resetTest}
+          correctChars={correctChars}
+          incorrectChars={incorrectChars}
+          duration={testMode === 'time' ? testDuration : elapsedTime}
+          wpmHistory={wpmHistory}
+          onReset={resetTest}
         />
       )}
       
@@ -125,7 +159,7 @@ function App() {
         disabled={testStatus === 'finished'}
         autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck="false"
       />
-    </>
+    </div>
   );
 }
 
