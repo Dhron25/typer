@@ -239,3 +239,20 @@ body {
   background-color: var(--text-color);
   color: var(--background-color);
 }
+.wpm-graph-container {
+  width: 100%;
+  max-width: 500px;
+  margin-top: 1rem;
+}
+
+.wpm-graph-container svg {
+  width: 100%;
+  border: 1px solid var(--inactive-color);
+  border-radius: 8px;
+}
+
+.graph-label {
+  font-size: 0.8rem;
+  color: var(--inactive-color);
+  margin-top: 0.5rem;
+}
