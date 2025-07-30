@@ -3,6 +3,7 @@ import React from 'react';
 
 type TestMode = 'words' | 'time';
 type TestDuration = 15 | 30 | 60;
+type CursorStyle = 'line' | 'block' | 'underline';
 type WordCount = 10 | 25 | 50 | 100;
 
 interface SettingsProps {
@@ -16,6 +17,8 @@ interface SettingsProps {
   onTestDurationChange: (duration: TestDuration) => void;
   wordCount: WordCount;
   onWordCountChange: (count: WordCount) => void;
+  cursorStyle: CursorStyle;
+  onCursorStyleChange: (style: CursorStyle) => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ 
@@ -24,6 +27,7 @@ const Settings: React.FC<SettingsProps> = ({
   testMode, onTestModeChange,
   testDuration, onTestDurationChange,
   wordCount, onWordCountChange,
+  cursorStyle, onCursorStyleChange,
 }) => {
   return (
     <div className="settings">
@@ -60,6 +64,12 @@ const Settings: React.FC<SettingsProps> = ({
           <button onClick={() => onTestDurationChange(60)} className={testDuration === 60 ? 'active' : ''}>60s</button>
         </div>
       )}
+
+      <div className="settings-group">
+        <button onClick={() => onCursorStyleChange('line')} className={cursorStyle === 'line' ? 'active' : ''}>Line</button>
+        <button onClick={() => onCursorStyleChange('block')} className={cursorStyle === 'block' ? 'active' : ''}>Block</button>
+        <button onClick={() => onCursorStyleChange('underline')} className={cursorStyle === 'underline' ? 'active' : ''}>Underline</button>
+      </div>
     </div>
   );
 };

@@ -10,37 +10,47 @@ import { generateWords } from './utils/words';
 
 type TestMode = 'words' | 'time';
 type TestDuration = 15 | 30 | 60;
+type CursorStyle = 'line' | 'block' | 'underline';
 type WordCount = 10 | 25 | 50 | 100;
 
 function App() {
+  // Core State
   const [words, setWords] = useState<string[]>([]);
   const [userInput, setUserInput] = useState('');
   const [activeWordIndex, setActiveWordIndex] = useState(0);
   const [testStatus, setTestStatus] = useState<'waiting' | 'typing' | 'finished'>('waiting');
+
+  // Settings State
   const [isCursiveMode, setIsCursiveMode] = useState(false);
   const [isPunctuationMode, setIsPunctuationMode] = useState(false);
   const [testMode, setTestMode] = useState<TestMode>('words');
   const [testDuration, setTestDuration] = useState<TestDuration>(30);
   const [wordCount, setWordCount] = useState<WordCount>(25);
+  const [cursorStyle, setCursorStyle] = useState<CursorStyle>('block');
+
+  // Stats & Keyboard State
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [correctChars, setCorrectChars] = useState(0);
   const [incorrectChars, setIncorrectChars] = useState(0);
   const [wpmHistory, setWpmHistory] = useState<number[]>([]);
   const [activeKey, setActiveKey] = useState('');
+
+  // Refs
   const inputRef = useRef<HTMLInputElement>(null);
   const prevUserInput = useRef('');
 
+  // Effect to reset the test when major settings change
   useEffect(() => {
     resetTest();
   }, [isPunctuationMode, testMode, testDuration, wordCount]);
 
+  // Timer and WPM history effect
   useEffect(() => {
     let interval: number | undefined;
     if (testStatus === 'typing') {
       interval = setInterval(() => {
-        // Renamed 'prev' to '_' to fix the unused variable warning
-        setElapsedTime(_ => {
+        setElapsedTime(() => {
           const newElapsedTime = (Date.now() - startTime!) / 1000;
           const currentWpm = newElapsedTime > 0 ? (correctChars / 5) / (newElapsedTime / 60) : 0;
           setWpmHistory(prevHistory => [...prevHistory, currentWpm]);
@@ -56,6 +66,7 @@ function App() {
     return () => clearInterval(interval);
   }, [testStatus, startTime, correctChars, testMode, testDuration]);
 
+  // Keyboard highlighting effect
   useEffect(() => {
     if (testStatus === 'typing' || testStatus === 'waiting') {
       const char = userInput.length > prevUserInput.current.length ? userInput[userInput.length - 1] : 'Backspace';
@@ -66,6 +77,7 @@ function App() {
     }
   }, [userInput, testStatus]);
   
+  // Instant Reset Hotkey Effect
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
@@ -95,46 +107,56 @@ function App() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+
     if (testStatus === 'finished') return;
     if (testStatus === 'waiting' && value.length > 0) {
       setTestStatus('typing');
       setStartTime(Date.now());
     }
+
+    // --- THIS IS THE CORRECTED LOGIC ---
     if (value.endsWith(' ')) {
-      if (value.trim() === '') {
-        setUserInput('');
-        return;
-      }
       const currentWord = words[activeWordIndex];
       const typedWord = value.trim();
-      setIncorrectChars(prev => prev + Math.abs(currentWord.length - typedWord.length));
-      for (let i = 0; i < Math.min(currentWord.length, typedWord.length); i++) {
-        if (typedWord[i] === currentWord[i]) {
-          setCorrectChars(prev => prev + 1);
-        } else {
-          setIncorrectChars(prev => prev + 1);
+
+      // Only advance if the typed word is a perfect match for the current word
+      if (typedWord === currentWord) {
+        // The word is correct, so update stats
+        // We add the length of the word, plus 1 for the space.
+        setCorrectChars(prev => prev + currentWord.length + 1);
+
+        // Check if the test should end
+        if (testMode === 'words' && activeWordIndex === wordCount - 1) {
+          setTestStatus('finished');
+          return; // Exit early to prevent clearing input on the final word
         }
-      }
-      setCorrectChars(prev => prev + 1);
-      if (testMode === 'words' && activeWordIndex === wordCount - 1) {
-        setTestStatus('finished');
-      } else {
+        
+        // Refill words if in time mode and getting low
         if (testMode === 'time' && activeWordIndex >= words.length - 5) {
             setWords(prev => [...prev, ...generateWords(wordCount, isPunctuationMode)]);
         }
+
+        // Advance to the next word
         setActiveWordIndex(prev => prev + 1);
         setUserInput('');
+      } else {
+        // If it's not a perfect match, we don't advance.
+        // We just update the input so the user can see their error.
+        setUserInput(value);
       }
       return;
     }
+
+    // For any other keypress (not a space), just update the input
     setUserInput(value);
   };
 
-  const appClasses = `${isCursiveMode ? 'cursive-mode' : ''} cursor-block`;
+  const appClasses = `${isCursiveMode ? 'cursive-mode' : ''} cursor-${cursorStyle}`;
 
   return (
-    <div className={appClasses}>
+    <div className={appClasses} onClick={() => inputRef.current?.focus()}>
       {testStatus === 'waiting' && <Header />}
+
       <div className="main-content">
         {testStatus === 'waiting' && (
           <Settings 
@@ -143,11 +165,16 @@ function App() {
             testMode={testMode} onTestModeChange={setTestMode}
             testDuration={testDuration} onTestDurationChange={setTestDuration}
             wordCount={wordCount} onWordCountChange={setWordCount}
+            cursorStyle={cursorStyle} onCursorStyleChange={setCursorStyle}
           />
         )}
+        
         {testStatus !== 'finished' && (
-          <WordDisplay words={words} activeWordIndex={activeWordIndex} userInput={userInput} />
+          <WordDisplay 
+            words={words} activeWordIndex={activeWordIndex} userInput={userInput} 
+          />
         )}
+        
         {testStatus === 'finished' && (
           <Results 
             correctChars={correctChars} incorrectChars={incorrectChars}
@@ -155,8 +182,10 @@ function App() {
             wpmHistory={wpmHistory} onReset={resetTest}
           />
         )}
+        
         {testStatus !== 'finished' && <Keyboard activeKey={activeKey} />}
       </div>
+      
       <input
         ref={inputRef} type="text" className="user-input"
         value={userInput} onChange={handleInputChange} disabled={testStatus === 'finished'}
