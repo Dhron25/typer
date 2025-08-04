@@ -1,7 +1,7 @@
 // src/components/WordDisplay.tsx
 import React, { useRef, useEffect } from 'react';
 
-// Character Component (No changes needed)
+// Character Component (No changes needed here)
 type CharStatus = 'correct' | 'incorrect' | 'untyped';
 interface CharacterProps {
   char: string;
@@ -22,9 +22,7 @@ interface WordProps {
   word: string;
   isActive: boolean;
   userInput: string;
-  // --- THIS IS THE FIX ---
-  // Use the correct, more general type for a ref being passed to a DOM element.
-  cursorRef: React.Ref<HTMLSpanElement>;
+  cursorRef?: React.RefObject<HTMLSpanElement | null>; // Ref for the cursor
 }
 const Word: React.FC<WordProps> = React.memo(({ word, isActive, userInput, cursorRef }) => {
   if (!isActive) {
@@ -44,7 +42,7 @@ const Word: React.FC<WordProps> = React.memo(({ word, isActive, userInput, curso
         />
       ))}
       {/* Attach the ref to the cursor span */}
-      <span className="cursor" ref={cursorRef}>
+      <span className="cursor" ref={cursorRef || undefined}>
         {remainingChars.length > 0 ? remainingChars[0] : ' '}
       </span>
       {remainingChars.slice(1).map((char, index) => (
@@ -60,7 +58,7 @@ const Word: React.FC<WordProps> = React.memo(({ word, isActive, userInput, curso
 });
 
 
-// WordDisplay Component
+// WordDisplay Component - THIS IS WHERE THE SCROLLING LOGIC LIVES
 interface WordDisplayProps {
   words: string[];
   activeWordIndex: number;
@@ -68,22 +66,29 @@ interface WordDisplayProps {
 }
 const WordDisplay: React.FC<WordDisplayProps> = ({ words, activeWordIndex, userInput }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const cursorRef = useRef<HTMLSpanElement>(null);
+  const cursorRef = useRef<HTMLSpanElement | null>(null);
 
+  // This effect handles the smooth scrolling
   useEffect(() => {
     if (containerRef.current && cursorRef.current) {
       const container = containerRef.current;
       const cursor = cursorRef.current;
+
+      // Get the position of the cursor relative to the start of the words-wrapper
       const cursorPosition = cursor.offsetLeft;
+      // Get the width of the visible container
       const containerWidth = container.offsetWidth;
+
+      // Calculate the desired scroll position to center the cursor
       const scrollTarget = cursorPosition - (containerWidth / 2);
 
+      // Animate the scroll
       container.scrollTo({
         left: scrollTarget,
         behavior: 'smooth',
       });
     }
-  }, [activeWordIndex, userInput]);
+  }, [activeWordIndex, userInput]); // Re-run whenever the user types or moves to a new word
 
   return (
     <div className="word-display-container" ref={containerRef}>
@@ -94,8 +99,8 @@ const WordDisplay: React.FC<WordDisplayProps> = ({ words, activeWordIndex, userI
             word={word}
             isActive={index === activeWordIndex}
             userInput={index === activeWordIndex ? userInput : ''}
-            // The assignment now works because the prop type is correct
-            cursorRef={index === activeWordIndex ? cursorRef : null}
+            // Pass the ref only to the active word
+            cursorRef={index === activeWordIndex ? cursorRef : undefined}
           />
         ))}
       </div>
